@@ -1,5 +1,4 @@
 import os
-
 from setuptools import find_packages, setup
 
 version_contents = {}
@@ -14,7 +13,10 @@ setup(
     description="Python client library for the syn10 API",
     version=version_contents["VERSION"],
     install_requires=[
-        "requests>=2.28.1",
+        "argparse==1.4.0",
+        "requests==2.28.1",
+        "requests-oauthlib==1.3.1",
+        "oauthlib==3.2.2",
     ],
     python_requires=">=3.8.15",
     entry_points={
@@ -22,7 +24,7 @@ setup(
             "syn10=syn10._syn10_scripts:main",
         ],
     },
-    packages=find_packages(exclude=["tests", "tests.*"]),
+    packages=find_packages(exclude=["tests", "tests.*", "docs", "examples"]),
     author="syn10",
     author_email="syn10.ai@gmail.com",
     url="https://github.com/syn10-ai/syn10-python.git",

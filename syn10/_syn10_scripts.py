@@ -1,20 +1,17 @@
 import sys
 import argparse
 
-from syn10.cli import api_register
+from syn10.cli import api_register, auth_register
 
 
 def main():
-    parser = argparse.ArgumentParser(description=None)
-
-    def help(args):
-        parser.print_help()
-
-    parser.set_defaults(func=help)
+    parser = argparse.ArgumentParser()
 
     subparsers = parser.add_subparsers()
-    sub_api = subparsers.add_parser("api", help="Direct API calls")
+    sub_auth = subparsers.add_parser("authenticate")
+    auth_register(sub_auth)
 
+    sub_api = subparsers.add_parser("api")
     api_register(sub_api)
 
     args = parser.parse_args()
