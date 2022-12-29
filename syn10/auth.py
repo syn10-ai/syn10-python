@@ -1,10 +1,10 @@
 from typing import Optional
-import requests
-from requests import exceptions
+
+import os
 from requests.auth import HTTPBasicAuth
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
-import os
+
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 
@@ -26,7 +26,7 @@ class Auth:
         auth = HTTPBasicAuth(self.client_id, self.client_secret)
         token_session = OAuth2Session(client=client)
         token_response = token_session.fetch_token(
-            token_url=" http://127.0.0.1:8000/oauth/token",
+            token_url="http://127.0.0.1:8000/oauth/token",
             auth=auth
         )
         return token_response['access_token']

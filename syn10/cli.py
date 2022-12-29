@@ -1,4 +1,12 @@
+import syn10
 from syn10 import main
+
+
+class Assets:
+    @classmethod
+    def info(cls, args):
+        asset_info = syn10.Dataset(asset_id=args.id).info
+        print(asset_info)
 
 
 def authenticator(args):
@@ -13,4 +21,7 @@ def auth_register(parser):
 
 
 def api_register(parser):
-    pass
+    subs = parser.add_subparsers()
+    sub = subs.add_parser("assets.info")
+    sub.add_argument("-i", "--id", required=True)
+    sub.set_defaults(func=Assets.info)
