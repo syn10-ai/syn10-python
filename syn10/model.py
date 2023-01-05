@@ -4,9 +4,11 @@ __all__ = [
 
 import syn10
 from syn10.api_requestor import APIRequestor
+from syn10 import utils
+from syn10.abstract import Listable
 
 
-class Model(APIRequestor):
+class Model(APIRequestor, Listable):
     def __init__(
             self,
             model_id=None
@@ -44,3 +46,4 @@ class Model(APIRequestor):
         resp = self._request("POST", url)
         resp.raise_for_status()
         return resp.json()
+

@@ -12,4 +12,3 @@ def check_model_verified(model_id=None):
         raise Exception(
             f"model_id: {model_id} is not verified."
         )
-

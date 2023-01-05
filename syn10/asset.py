@@ -1,69 +1,83 @@
 __all__ = [
-    "Dataset"
+    "Dataset",
+    "Deliverable"
 ]
 
-import json
-
-import syn10
 from syn10.api_requestor import APIRequestor
+from syn10.abstract import (
+    Listable,
+    Creatable,
+    Downloadable,
+    Deletable,
+    Informable,
+    Updatable
+)
 
 
-class Asset(APIRequestor):
-    def __init__(self, asset_id=None, metadata=None):
+class Asset(APIRequestor, Informable):
+    def __init__(self, id=None):
         super(Asset, self).__init__()
-        self.asset_id = asset_id
-        self.info = metadata
+        self.id = id
 
-        if self.asset_id:
-            self._fetch_info()
+    def get_id(self):
+        if not self.id:
+            raise ValueError("'id' is missing.")
+        return self.id
 
     @staticmethod
     def get_endpoint():
         return "/assets"
 
-    def _fetch_info(self):
-        url = f"{syn10.base}{self.get_endpoint()}/{self.asset_id}/info"
-        resp = self._request("GET", url)
-        resp.raise_for_status()
-        self.info = resp.json()
+    @classmethod
+    def _construct_obj_from_id(cls, id):
+        return cls(id=id)
 
-    def update_metadata(self, metadata={}, replace=False):
-        if self.asset_id:
-            url = f"{syn10.base}{self.get_endpoint()}/{self.asset_id}/metadata"
-            resp = self._request("POST", url, data=metadata, query={"replace": replace})
-            resp.raise_for_status()
-            self._fetch_info()
-        else:
-            self.info = metadata if replace is True else self.info.update(metadata)
+    @classmethod
+    def _construct_list_from_resp(cls, resp):
+        return [
+            cls._construct_obj_from_id(
+                asset.get("id")
+            ) for asset in resp
+        ]
 
 
-class Downloadable(Asset):
-    def _download(self, *args, **kwargs):
-        pass
+class Dataset(
+    Asset,
+    Creatable,
+    Listable,
+    Updatable,
+    Deletable,
+    Downloadable
+):
+    def __init__(self, id=None):
+        super(Dataset, self).__init__(id=id)
 
-
-class Uploadable(Asset):
-    def _upload(self, *args, **kwargs):
-        pass
-
-
-class Deletable(Asset):
-    def _delete(self, *args, **kwargs):
-        pass
-
-
-class Dataset(Uploadable, Downloadable, Deletable):
-    def __init__(self, asset_id=None, filepath=None, metadata=None):
-        super(Dataset, self).__init__(asset_id=asset_id, metadata=metadata)
-        self.filepath = filepath
-
-    def upload(self):
-        self._upload(self.filepath, self.info)
+    @classmethod
+    def create(cls, path=None, metadata={}):
+        dataset = super().create(path=path, metadata=metadata)
+        return dataset
 
     def download(self):
-        self._download(self.asset_id)
+        resp = super().download(id=self.id)
+        return resp
 
     def delete(self):
-        self._delete(self.asset_id)
+        resp = super().delete(id=self.id)
+        return resp
 
 
+class Deliverable(Asset, Downloadable, Listable, Deletable):
+    def __init__(self, id=None):
+        if not id:
+            raise ValueError(
+                "'id' is missing."
+            )
+        super(Deliverable, self).__init__(id=id)
+
+    def download(self):
+        resp = super().download(id=self.id)
+        return resp
+
+    def delete(self):
+        resp = super().delete(id=self.id)
+        return resp

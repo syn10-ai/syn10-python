@@ -1,4 +1,5 @@
 __all__ = [
+    "Order",
     "TrainingOrder",
     "SamplingOrder"
 ]
@@ -6,6 +7,7 @@ __all__ = [
 import syn10
 from syn10.api_requestor import APIRequestor
 from syn10 import utils
+from syn10.abstract import Listable
 
 
 class Order(APIRequestor):
@@ -32,9 +34,10 @@ class Order(APIRequestor):
         url = f"{syn10.base}{self.get_endpoint()}/{self.order_id}/info"
         resp = self._request("GET", url)
         resp.raise_for_status()
-        self.info = resp.json()
-        self.project_id = ...
-        self.order_parameters = ...
+        resp_json = resp.json()
+        self.info = resp_json
+        self.project_id = resp_json.get("project_id")
+        self.order_parameters = resp_json.get("order_parameters")
 
     def place(self):
         raise NotImplementedError
@@ -42,8 +45,14 @@ class Order(APIRequestor):
     def estimate(self, estimation_parameters={}):
         raise NotImplementedError
 
-    def get_assets(self, json=False):
-        pass
+    def get_assets(self):
+        if not self.order_id:
+            return []
+        url = f"{syn10.base}{self.get_endpoint()}/{self.order_id}/assets"
+        resp = self._request("GET", url)
+        resp.raise_for_status()
+        resp_json = resp.json()
+        return [syn10.Asset(id=asset.get("id")) for asset in resp_json]
 
     def status(self):
         pass
@@ -52,7 +61,7 @@ class Order(APIRequestor):
         pass
 
 
-class TrainingOrder(Order):
+class TrainingOrder(Order, Listable):
     def __init__(self, order_id=None, project_id=None, order_parameters={}):
         super(TrainingOrder, self).__init__(
             order_id=order_id,
@@ -61,19 +70,43 @@ class TrainingOrder(Order):
         )
 
     def place(self):
-        print(
-            f"placing training order ... "
-            f"project_id: {self.project_id} "
-            f"order_parameters: {self.order_parameters}"
+        if self.order_id:
+            raise Exception(
+                "'order_id' should not be provided "
+                "for a new order placement"
+            )
+
+        url = f"{syn10.base}{self.get_endpoint()}/place"
+        payload = self.order_parameters.copy()
+        payload.update(
+            {
+                "order_id": self.order_id,
+                "project_id": self.project_id,
+                "order_class": self.__class__.__name__
+            }
         )
+        resp = self._request("POST", url, data=payload)
+        resp.raise_for_status()
+        return resp
 
     def get_models(self):
+        model_ids = []
         if not self.order_id:
-            return []
-        ...
+            return model_ids
+        url = f"{syn10.base}{self.get_endpoint()}/{self.order_id}/models"
+        resp = self._request("GET", url)
+        resp.raise_for_status()
+        model_ids = resp.json().get("model_ids", [])
+        if not model_ids:
+            return model_ids
+        models = [syn10.Model(model_id=model_id) for model_id in model_ids]
+        return models
+
+    def estimate(self, estimation_parameters={}):
+        raise NotImplementedError
 
 
-class SamplingOrder(Order):
+class SamplingOrder(Order, Listable):
     def __init__(self, order_id=None, project_id=None, order_parameters={}):
         super(SamplingOrder, self).__init__(
             order_id=order_id,
@@ -87,23 +120,29 @@ class SamplingOrder(Order):
                 "'order_id' should not be provided "
                 "for a new order placement"
             )
+
         model_id = self.order_parameters.get("model_id")
         assert model_id
         utils.check_model_verified(model_id=model_id)
 
-        # TODO: place order
-
-        print(
-            f"placing sampling order ... "
-            f"project_id: {self.project_id} "
-            f"order_parameters: {self.order_parameters}"
+        url = f"{syn10.base}{self.get_endpoint()}/place"
+        payload = self.order_parameters.copy()
+        payload.update(
+            {
+                "order_id": self.order_id,
+                "project_id": self.project_id,
+                "order_class": self.__class__.__name__
+            }
         )
+        resp = self._request("POST", url, data=payload)
+        resp.raise_for_status()
+        return resp
 
     def estimate(self, estimation_parameters={}):
         estimation_parameters.update(self.order_parameters)
-        if "_purpose" in estimation_parameters:
-            raise KeyError('"_purpose" is a reserved keyword.')
-        estimation_parameters.update({"_purpose": "sampling"})
+        if "order_class" in estimation_parameters:
+            raise KeyError('"order_class" is a reserved keyword.')
+        estimation_parameters.update({"order_class": self.__class__.__name__})
 
         model_id = estimation_parameters.get("model_id")
         assert model_id
@@ -113,5 +152,3 @@ class SamplingOrder(Order):
         resp = self._request("POST", url, data=estimation_parameters)
         resp.raise_for_status()
         return resp.json()
-
-
