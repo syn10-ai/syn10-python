@@ -1,4 +1,3 @@
 class Downloadable:
-    @classmethod
-    def download(cls, *args, **kwargs):
+    def download(self, *args, **kwargs):
         pass

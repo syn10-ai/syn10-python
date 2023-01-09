@@ -1,19 +1,11 @@
-from typing import Optional
-
-import os
+import syn10
 from requests.auth import HTTPBasicAuth
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
 
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-
 
 class Auth:
-    def __init__(
-            self,
-            client_id: Optional[str] = None,
-            client_secret: Optional[str] = None
-    ):
+    def __init__(self, client_id: str, client_secret: str):
         self.client_id = client_id
         self.client_secret = client_secret
         self.token = self._get_token()
@@ -26,7 +18,7 @@ class Auth:
         auth = HTTPBasicAuth(self.client_id, self.client_secret)
         token_session = OAuth2Session(client=client)
         token_response = token_session.fetch_token(
-            token_url="http://127.0.0.1:8000/oauth/token",
+            token_url=f"{syn10.base}/oauth/token",
             auth=auth
         )
         return token_response['access_token']

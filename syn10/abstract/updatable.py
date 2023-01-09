@@ -14,6 +14,6 @@ class Updatable:
     def update(self, **params):
         requestor = APIRequestor(token=utils.find_token())
         url = f"{syn10.base}{self.get_endpoint()}/{self.get_id()}"
-        resp = requestor._request("POST", url, data=params, query={"cls": self.__class__.__name__})
+        resp = requestor._request("PUT", url, data=params, query={"cls": self.__class__.__name__})
         resp.raise_for_status()
         return resp

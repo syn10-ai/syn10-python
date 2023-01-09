@@ -8,10 +8,7 @@ from syn10.auth import Auth
 _auth: Optional[Auth] = None
 
 
-def authenticate(
-        client_id: Optional[str] = None,
-        client_secret: Optional[str] = None
-):
+def authenticate(client_id: str, client_secret: str):
     global _auth
     _auth = Auth(
         client_id=client_id,

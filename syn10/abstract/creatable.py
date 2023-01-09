@@ -15,7 +15,7 @@ class Creatable:
     @classmethod
     def create(cls, *args, **params):
         requestor = APIRequestor(token=utils.find_token())
-        url = f"{syn10.base}{cls.get_endpoint()}/create"
+        url = f"{syn10.base}{cls.get_endpoint()}"
         resp = requestor._request("POST", url, data=params, query={"cls": cls.__name__})
         resp.raise_for_status()
         resp_json = resp.json()
