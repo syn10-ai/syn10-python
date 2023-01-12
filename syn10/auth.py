@@ -1,7 +1,9 @@
 import syn10
+from syn10 import error
 from requests.auth import HTTPBasicAuth
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
+from requests.exceptions import Timeout
 
 
 class Auth:
@@ -17,9 +19,14 @@ class Auth:
         )
         auth = HTTPBasicAuth(self.client_id, self.client_secret)
         token_session = OAuth2Session(client=client)
-        token_response = token_session.fetch_token(
-            token_url=f"{syn10.base}/oauth/token",
-            auth=auth
-        )
-        return token_response['access_token']
+        try:
+            token_response = token_session.fetch_token(
+                token_url=f"{syn10.base}/oauth/token",
+                auth=auth,
+                timeout=30
+            )
+        except Timeout as e:
+            raise error.Timeout(str(e)) from e
+        access_token = token_response['access_token']
+        return access_token
 

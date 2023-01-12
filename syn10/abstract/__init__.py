@@ -1,3 +1,4 @@
+from syn10.abstract.api_resource import APIResource
 from syn10.abstract.listable import Listable
 from syn10.abstract.downloadable import Downloadable
 from syn10.abstract.deletable import Deletable

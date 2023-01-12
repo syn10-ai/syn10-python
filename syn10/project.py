@@ -2,11 +2,8 @@ __all__ = [
     "Project"
 ]
 
-from typing import Type, Union
-
 import syn10
-from syn10.order import Order
-from syn10.api_requestor import APIRequestor
+from syn10 import TrainingOrder, SamplingOrder
 from syn10.abstract import (
     Informable,
     Creatable,
@@ -15,10 +12,12 @@ from syn10.abstract import (
     Deletable
 )
 
+from typing import Type, Union
 
-class Project(APIRequestor, Informable, Creatable, Updatable, Listable, Deletable):
+
+class Project(Informable, Creatable, Updatable, Listable, Deletable):
     def __init__(self, id):
-        super(Project, self).__init__()
+        super().__init__(id=id)
         self.id = id
 
     def __enter__(self):
@@ -26,17 +25,6 @@ class Project(APIRequestor, Informable, Creatable, Updatable, Listable, Deletabl
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
-
-    def get_id(self):
-        return self.id
-
-    @classmethod
-    def _construct_obj_from_id(cls, id):
-        return cls(id=id)
-
-    @classmethod
-    def _construct_list_from_resp(cls, resp):
-        return [cls._construct_obj_from_id(item.get("id")) for item in resp]
 
     @staticmethod
     def get_endpoint():
@@ -51,19 +39,23 @@ class Project(APIRequestor, Informable, Creatable, Updatable, Listable, Deletabl
         project = super().create(**payload)
         return project
 
-    def create_order(self, order_type: Union[Type[Order], Type[Creatable]], **parameters):
-        order = order_type.create(project_id=self.get_id(), **parameters)
+    def create_order(
+            self,
+            type: Union[Type[SamplingOrder], Type[TrainingOrder]],
+            **parameters
+    ):
+        order = type.create(project_id=self.get_id(), **parameters)
         return order
 
-    def get_orders(self, order_type: Type[Order]):
+    def get_orders(
+            self,
+            type: Union[Type[SamplingOrder], Type[TrainingOrder]]
+    ):
         url = f"{syn10.base}{self.get_endpoint()}/{self.get_id()}/orders"
-        resp = self._request("GET", url, query={"cls": order_type.__name__})
+        resp = self.request("GET", url, query={"cls": type.__name__})
         resp.raise_for_status()
         resp_json = resp.json()
-        return [order_type(id=order.get("id")) for order in resp_json]
-
-
-
+        return [type(id=order.get("id")) for order in resp_json]
 
 
 

@@ -3,8 +3,8 @@ __all__ = [
     "Deliverable"
 ]
 
-from syn10.api_requestor import APIRequestor
 from syn10.abstract import (
+    APIResource,
     Listable,
     Creatable,
     Downloadable,
@@ -14,41 +14,17 @@ from syn10.abstract import (
 )
 
 
-class Asset(APIRequestor, Informable):
-    def __init__(self, id=None):
-        super(Asset, self).__init__()
+class Asset(APIResource):
+    def __init__(self, id):
+        super().__init__(id=id)
         self.id = id
-
-    def get_id(self):
-        if not self.id:
-            raise ValueError("'id' is missing.")
-        return self.id
 
     @staticmethod
     def get_endpoint():
         return "/assets"
 
-    @classmethod
-    def _construct_obj_from_id(cls, id):
-        return cls(id=id)
 
-    @classmethod
-    def _construct_list_from_resp(cls, resp):
-        return [
-            cls._construct_obj_from_id(
-                item.get("id")
-            ) for item in resp
-        ]
-
-
-class Dataset(
-    Asset,
-    Creatable,
-    Listable,
-    Updatable,
-    Deletable,
-    Downloadable
-):
+class Dataset(Asset, Informable, Listable, Creatable, Updatable, Deletable, Downloadable):
     def __init__(self, id):
         super(Dataset, self).__init__(id=id)
 
@@ -66,7 +42,7 @@ class Dataset(
         return resp
 
 
-class Deliverable(Asset, Downloadable, Listable, Deletable):
+class Deliverable(Asset, Informable, Listable, Downloadable, Deletable):
     def __init__(self, id):
         super(Deliverable, self).__init__(id=id)
 
