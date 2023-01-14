@@ -46,7 +46,7 @@ class APIRequestor:
         except Timeout as e:
             raise error.Timeout(str(e)) from e
         if resp.status_code >= 300:
-            self._handle_error_response(resp)
+            raise self._handle_error_response(resp)
         return resp
 
     def _generate_headers(self, token=None):
@@ -63,16 +63,19 @@ class APIRequestor:
         resp_json = resp.json()
 
         if "error" not in resp_json:
-            raise error.InvalidResponse(
+            e = error.InvalidResponse(
                 "'error' key is missing.",
                 code=err_code
             )
+            utils.log_error(f"{repr(e)}")
+            return e
 
         err_data = resp_json["error"]
 
         if err_code == 401:
-            raise error.AuthenticationError(
+            e = error.AuthenticationError(
                 err_data.get("message"),
                 code=err_code
             )
-
+            utils.log_error(f"{repr(e)}")
+            return e

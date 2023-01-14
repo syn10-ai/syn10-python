@@ -2,6 +2,8 @@ __all__ = [
     "Project"
 ]
 
+from typing import List, Type, Union, overload
+
 import syn10
 from syn10 import TrainingOrder, SamplingOrder
 from syn10.abstract import (
@@ -11,8 +13,6 @@ from syn10.abstract import (
     Listable,
     Deletable
 )
-
-from typing import Type, Union
 
 
 class Project(Informable, Creatable, Updatable, Listable, Deletable):
@@ -39,18 +39,27 @@ class Project(Informable, Creatable, Updatable, Listable, Deletable):
         project = super().create(**payload)
         return project
 
-    def create_order(
-            self,
-            type: Union[Type[SamplingOrder], Type[TrainingOrder]],
-            **parameters
-    ):
-        order = type.create(project_id=self.get_id(), **parameters)
+    @overload
+    def create_order(self, type: Type[SamplingOrder], **params) -> SamplingOrder:
+        pass
+
+    @overload
+    def create_order(self, type: Type[TrainingOrder], **params) -> TrainingOrder:
+        pass
+
+    def create_order(self, type: Union[Type[SamplingOrder], Type[TrainingOrder]], **params):
+        order = type.create(project_id=self.get_id(), **params)
         return order
 
-    def get_orders(
-            self,
-            type: Union[Type[SamplingOrder], Type[TrainingOrder]]
-    ):
+    @overload
+    def get_orders(self, type: Type[SamplingOrder]) -> List[SamplingOrder]:
+        pass
+
+    @overload
+    def get_orders(self, type: Type[TrainingOrder]) -> List[TrainingOrder]:
+        pass
+
+    def get_orders(self, type: Union[Type[SamplingOrder], Type[TrainingOrder]]):
         url = f"{syn10.base}{self.get_endpoint()}/{self.get_id()}/orders"
         resp = self.request("GET", url, query={"cls": type.__name__})
         resp.raise_for_status()

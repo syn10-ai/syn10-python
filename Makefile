@@ -5,3 +5,6 @@ build:
 
 install:
 	python -m pip install .
+
+clean:
+	rm -rf build dist *.egg-info .pytest_cache

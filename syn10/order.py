@@ -33,10 +33,10 @@ class Order(APIResource):
         return [syn10.Deliverable(id=deliverable.get("id")) for deliverable in resp_json]
 
     @classmethod
-    def estimate(cls, **parameters):
+    def estimate(cls, **params):
         url = f"{syn10.base}{cls.get_endpoint()}/estimate"
         requestor = APIRequestor(token=utils.find_token())
-        resp = requestor.request("POST", url, data=parameters, query={"cls": cls.__name__})
+        resp = requestor.request("POST", url, data=params, query={"cls": cls.__name__})
         resp.raise_for_status()
         resp_json = resp.json()
         return resp_json
@@ -55,10 +55,10 @@ class TrainingOrder(Order, Informable, Creatable, Listable, Cancelable, Deletabl
         super(TrainingOrder, self).__init__(id=id)
 
     @classmethod
-    def create(cls, project_id, **parameters):
+    def create(cls, project_id, **params):
         payload = {
             "project_id": project_id,
-            "parameters": parameters
+            "params": params
         }
         order = super().create(**payload)
         return order
@@ -72,7 +72,7 @@ class TrainingOrder(Order, Informable, Creatable, Listable, Cancelable, Deletabl
         return models
 
     @classmethod
-    def estimate(cls, **parameters):
+    def estimate(cls, **params):
         raise NotImplementedError
 
 
@@ -81,23 +81,23 @@ class SamplingOrder(Order, Informable, Creatable, Listable, Cancelable, Deletabl
         super(SamplingOrder, self).__init__(id=id)
 
     @classmethod
-    def create(cls, project_id, **parameters):
-        model_id = parameters.get("model_id")
+    def create(cls, project_id, **params):
+        model_id = params.get("model_id")
         if not model_id:
             raise KeyError("'model_id' is missing.")
         utils.check_model_verified(model_id=model_id)
         payload = {
             "project_id": project_id,
-            "parameters": parameters
+            "params": params
         }
         order = super().create(**payload)
         return order
 
     @classmethod
-    def estimate(cls, **parameters):
-        model_id = parameters.get("model_id")
+    def estimate(cls, **params):
+        model_id = params.get("model_id")
         if not model_id:
             raise KeyError("'model_id' is missing.")
         utils.check_model_verified(model_id=model_id)
-        estimation = super().estimate(**parameters)
+        estimation = super().estimate(**params)
         return estimation

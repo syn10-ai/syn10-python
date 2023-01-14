@@ -1,5 +1,8 @@
 import os
+from pathlib import Path
 from setuptools import find_packages, setup
+
+parent_dir = Path(__file__).resolve().parent
 
 version_contents = {}
 version_path = os.path.join(
@@ -9,23 +12,20 @@ with open(version_path, "rt") as f:
     exec(f.read(), version_contents)
 
 setup(
-    name="syn10",
-    description="Python client library for the syn10 API",
+    name="Syn10",
+    description="Python SDK for Syn10",
     version=version_contents["VERSION"],
-    install_requires=[
-        "argparse==1.4.0",
-        "requests==2.28.1",
-        "requests-oauthlib==1.3.1",
-        "oauthlib==3.2.2",
-    ],
-    python_requires=">=3.8.15",
+    author="Syn10",
+    author_email="support@syn10.ai",
+    url="https://github.com/syn10-ai/syn10-python.git",
+    license="MIT",
     entry_points={
         "console_scripts": [
             "syn10=syn10._syn10_scripts:main",
         ],
     },
     packages=find_packages(exclude=["tests", "tests.*", "docs", "examples"]),
-    author="syn10",
-    author_email="syn10.ai@gmail.com",
-    url="https://github.com/syn10-ai/syn10-python.git",
+    data_files=[("", ["requirements.txt"])],
+    install_requires=parent_dir.joinpath("requirements.txt").read_text().splitlines(),
+    python_requires=">=3.8.15",
 )
