@@ -47,7 +47,7 @@ class Project(Informable, Creatable, Updatable, Listable, Deletable):
     def create_order(self, type: Type[TrainingOrder], **params) -> TrainingOrder:
         pass
 
-    def create_order(self, type: Union[Type[SamplingOrder], Type[TrainingOrder]], **params):
+    def create_order(self, type, **params):
         order = type.create(project_id=self.get_id(), **params)
         return order
 
@@ -59,7 +59,7 @@ class Project(Informable, Creatable, Updatable, Listable, Deletable):
     def get_orders(self, type: Type[TrainingOrder]) -> List[TrainingOrder]:
         pass
 
-    def get_orders(self, type: Union[Type[SamplingOrder], Type[TrainingOrder]]):
+    def get_orders(self, type):
         url = f"{syn10.base}{self.get_endpoint()}/{self.get_id()}/orders"
         resp = self.request("GET", url, query={"cls": type.__name__})
         resp.raise_for_status()

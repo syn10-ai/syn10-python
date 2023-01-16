@@ -6,12 +6,19 @@ class APIResource:
     def __init__(self, id):
         self.id = id
 
-    def get_id(self):
-        return self.id
+    def __str__(self):
+        return str(self.info)
+
+    @property
+    def info(self):
+        return NotImplementedError
 
     @staticmethod
     def get_endpoint():
         return NotImplementedError
+
+    def get_id(self):
+        return self.id
 
     @classmethod
     def _construct_obj_from_id(cls, id):

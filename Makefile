@@ -1,4 +1,6 @@
-.PHONY: build install
+.PHONY: build install all
+
+all: build install
 
 build:
 	python -m build

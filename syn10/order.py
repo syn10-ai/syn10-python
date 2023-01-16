@@ -98,6 +98,5 @@ class SamplingOrder(Order, Informable, Creatable, Listable, Cancelable, Deletabl
         model_id = params.get("model_id")
         if not model_id:
             raise KeyError("'model_id' is missing.")
-        utils.check_model_verified(model_id=model_id)
         estimation = super().estimate(**params)
         return estimation
