@@ -2,7 +2,7 @@ __all__ = [
     "Project"
 ]
 
-from typing import List, Type, Union, overload
+from typing import List, Type, overload
 
 import syn10
 from syn10 import TrainingOrder, SamplingOrder
